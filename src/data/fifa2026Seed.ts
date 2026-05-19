@@ -3,6 +3,7 @@ import type { AlbumTemplate, AlbumTemplateGroup, StickerSlot, StickerType } from
 import { fifa2026ChecklistRows } from './fifa2026Checklist';
 
 type TeamDefinition = {
+  id: string;
   name: string;
   code: string;
   groupLetter: string;
@@ -15,54 +16,54 @@ type ChecklistRow = (typeof fifa2026ChecklistRows)[number];
 const palette = ['#D95D39', '#0F6D74', '#2F8F53', '#C48A1E', '#B2575E', '#4C78A8'];
 
 const officialTeams: TeamDefinition[] = [
-  { name: 'Mexico', code: 'mex', groupLetter: 'A', color: palette[0] },
-  { name: 'South Africa', code: 'rsa', groupLetter: 'A', color: palette[1] },
-  { name: 'South Korea', code: 'kor', groupLetter: 'A', color: palette[2], aliases: ['Korea Republic'] },
-  { name: 'Czechia', code: 'cze', groupLetter: 'A', color: palette[3] },
-  { name: 'Canada', code: 'can', groupLetter: 'B', color: palette[1] },
-  { name: 'Bosnia and Herzegovina', code: 'bih', groupLetter: 'B', color: palette[2] },
-  { name: 'Qatar', code: 'qat', groupLetter: 'B', color: palette[3] },
-  { name: 'Switzerland', code: 'sui', groupLetter: 'B', color: palette[4] },
-  { name: 'Brazil', code: 'bra', groupLetter: 'C', color: palette[2] },
-  { name: 'Morocco', code: 'mar', groupLetter: 'C', color: palette[3] },
-  { name: 'Haiti', code: 'hai', groupLetter: 'C', color: palette[4] },
-  { name: 'Scotland', code: 'sco', groupLetter: 'C', color: palette[5] },
-  { name: 'USA', code: 'usa', groupLetter: 'D', color: palette[3], aliases: ['United States'] },
-  { name: 'Paraguay', code: 'par', groupLetter: 'D', color: palette[4] },
-  { name: 'Australia', code: 'aus', groupLetter: 'D', color: palette[5] },
-  { name: 'Türkiye', code: 'tur', groupLetter: 'D', color: palette[0], aliases: ['Turkiye'] },
-  { name: 'Germany', code: 'ger', groupLetter: 'E', color: palette[4] },
-  { name: 'Curaçao', code: 'cuw', groupLetter: 'E', color: palette[5], aliases: ['Curacao'] },
-  { name: 'Ivory Coast', code: 'civ', groupLetter: 'E', color: palette[0], aliases: ["Cote d'Ivoire"] },
-  { name: 'Ecuador', code: 'ecu', groupLetter: 'E', color: palette[1] },
-  { name: 'Netherlands', code: 'ned', groupLetter: 'F', color: palette[5] },
-  { name: 'Japan', code: 'jpn', groupLetter: 'F', color: palette[0] },
-  { name: 'Sweden', code: 'swe', groupLetter: 'F', color: palette[1] },
-  { name: 'Tunisia', code: 'tun', groupLetter: 'F', color: palette[2] },
-  { name: 'Belgium', code: 'bel', groupLetter: 'G', color: palette[0] },
-  { name: 'Egypt', code: 'egy', groupLetter: 'G', color: palette[1] },
-  { name: 'Iran', code: 'irn', groupLetter: 'G', color: palette[2], aliases: ['IR Iran'] },
-  { name: 'New Zealand', code: 'nzl', groupLetter: 'G', color: palette[3] },
-  { name: 'Spain', code: 'esp', groupLetter: 'H', color: palette[1] },
-  { name: 'Cape Verde', code: 'cpv', groupLetter: 'H', color: palette[2], aliases: ['Cabo Verde'] },
-  { name: 'Saudi Arabia', code: 'ksa', groupLetter: 'H', color: palette[3] },
-  { name: 'Uruguay', code: 'uru', groupLetter: 'H', color: palette[4] },
-  { name: 'France', code: 'fra', groupLetter: 'I', color: palette[2] },
-  { name: 'Senegal', code: 'sen', groupLetter: 'I', color: palette[3] },
-  { name: 'Iraq', code: 'irq', groupLetter: 'I', color: palette[4] },
-  { name: 'Norway', code: 'nor', groupLetter: 'I', color: palette[5] },
-  { name: 'Argentina', code: 'arg', groupLetter: 'J', color: palette[3] },
-  { name: 'Algeria', code: 'alg', groupLetter: 'J', color: palette[4] },
-  { name: 'Austria', code: 'aut', groupLetter: 'J', color: palette[5] },
-  { name: 'Jordan', code: 'jor', groupLetter: 'J', color: palette[0] },
-  { name: 'Portugal', code: 'por', groupLetter: 'K', color: palette[4] },
-  { name: 'Congo DR', code: 'cod', groupLetter: 'K', color: palette[5] },
-  { name: 'Uzbekistan', code: 'uzb', groupLetter: 'K', color: palette[0] },
-  { name: 'Colombia', code: 'col', groupLetter: 'K', color: palette[1] },
-  { name: 'England', code: 'eng', groupLetter: 'L', color: palette[5] },
-  { name: 'Croatia', code: 'cro', groupLetter: 'L', color: palette[0] },
-  { name: 'Ghana', code: 'gha', groupLetter: 'L', color: palette[1] },
-  { name: 'Panama', code: 'pan', groupLetter: 'L', color: palette[2] },
+  { id: 'MEX', name: 'Mexico', code: 'mex', groupLetter: 'A', color: palette[0] },
+  { id: 'RSA', name: 'South Africa', code: 'rsa', groupLetter: 'A', color: palette[1] },
+  { id: 'KOR', name: 'South Korea', code: 'kor', groupLetter: 'A', color: palette[2], aliases: ['Korea Republic'] },
+  { id: 'CZE', name: 'Czechia', code: 'cze', groupLetter: 'A', color: palette[3] },
+  { id: 'CAN', name: 'Canada', code: 'can', groupLetter: 'B', color: palette[1] },
+  { id: 'BIH', name: 'Bosnia and Herzegovina', code: 'bih', groupLetter: 'B', color: palette[2] },
+  { id: 'QAT', name: 'Qatar', code: 'qat', groupLetter: 'B', color: palette[3] },
+  { id: 'SUI', name: 'Switzerland', code: 'sui', groupLetter: 'B', color: palette[4] },
+  { id: 'BRA', name: 'Brazil', code: 'bra', groupLetter: 'C', color: palette[2] },
+  { id: 'MAR', name: 'Morocco', code: 'mar', groupLetter: 'C', color: palette[3] },
+  { id: 'HAI', name: 'Haiti', code: 'hai', groupLetter: 'C', color: palette[4] },
+  { id: 'SCO', name: 'Scotland', code: 'sco', groupLetter: 'C', color: palette[5] },
+  { id: 'USA', name: 'USA', code: 'usa', groupLetter: 'D', color: palette[3], aliases: ['United States'] },
+  { id: 'PAR', name: 'Paraguay', code: 'par', groupLetter: 'D', color: palette[4] },
+  { id: 'AUS', name: 'Australia', code: 'aus', groupLetter: 'D', color: palette[5] },
+  { id: 'TUR', name: 'Türkiye', code: 'tur', groupLetter: 'D', color: palette[0], aliases: ['Turkiye'] },
+  { id: 'GER', name: 'Germany', code: 'ger', groupLetter: 'E', color: palette[4] },
+  { id: 'CUW', name: 'Curaçao', code: 'cuw', groupLetter: 'E', color: palette[5], aliases: ['Curacao'] },
+  { id: 'CIV', name: 'Ivory Coast', code: 'civ', groupLetter: 'E', color: palette[0], aliases: ["Cote d'Ivoire"] },
+  { id: 'ECU', name: 'Ecuador', code: 'ecu', groupLetter: 'E', color: palette[1] },
+  { id: 'NED', name: 'Netherlands', code: 'ned', groupLetter: 'F', color: palette[5] },
+  { id: 'JPN', name: 'Japan', code: 'jpn', groupLetter: 'F', color: palette[0] },
+  { id: 'SWE', name: 'Sweden', code: 'swe', groupLetter: 'F', color: palette[1] },
+  { id: 'TUN', name: 'Tunisia', code: 'tun', groupLetter: 'F', color: palette[2] },
+  { id: 'BEL', name: 'Belgium', code: 'bel', groupLetter: 'G', color: palette[0] },
+  { id: 'EGY', name: 'Egypt', code: 'egy', groupLetter: 'G', color: palette[1] },
+  { id: 'IRN', name: 'Iran', code: 'irn', groupLetter: 'G', color: palette[2], aliases: ['IR Iran'] },
+  { id: 'NZL', name: 'New Zealand', code: 'nzl', groupLetter: 'G', color: palette[3] },
+  { id: 'ESP', name: 'Spain', code: 'esp', groupLetter: 'H', color: palette[1] },
+  { id: 'CPV', name: 'Cape Verde', code: 'cpv', groupLetter: 'H', color: palette[2], aliases: ['Cabo Verde'] },
+  { id: 'KSA', name: 'Saudi Arabia', code: 'ksa', groupLetter: 'H', color: palette[3] },
+  { id: 'URU', name: 'Uruguay', code: 'uru', groupLetter: 'H', color: palette[4] },
+  { id: 'FRA', name: 'France', code: 'fra', groupLetter: 'I', color: palette[2] },
+  { id: 'SEN', name: 'Senegal', code: 'sen', groupLetter: 'I', color: palette[3] },
+  { id: 'IRQ', name: 'Iraq', code: 'irq', groupLetter: 'I', color: palette[4] },
+  { id: 'NOR', name: 'Norway', code: 'nor', groupLetter: 'I', color: palette[5] },
+  { id: 'ARG', name: 'Argentina', code: 'arg', groupLetter: 'J', color: palette[3] },
+  { id: 'ALG', name: 'Algeria', code: 'alg', groupLetter: 'J', color: palette[4] },
+  { id: 'AUT', name: 'Austria', code: 'aut', groupLetter: 'J', color: palette[5] },
+  { id: 'JOR', name: 'Jordan', code: 'jor', groupLetter: 'J', color: palette[0] },
+  { id: 'POR', name: 'Portugal', code: 'por', groupLetter: 'K', color: palette[4] },
+  { id: 'COD', name: 'Congo DR', code: 'cod', groupLetter: 'K', color: palette[5] },
+  { id: 'UZB', name: 'Uzbekistan', code: 'uzb', groupLetter: 'K', color: palette[0] },
+  { id: 'COL', name: 'Colombia', code: 'col', groupLetter: 'K', color: palette[1] },
+  { id: 'ENG', name: 'England', code: 'eng', groupLetter: 'L', color: palette[5] },
+  { id: 'CRO', name: 'Croatia', code: 'cro', groupLetter: 'L', color: palette[0] },
+  { id: 'GHA', name: 'Ghana', code: 'gha', groupLetter: 'L', color: palette[1] },
+  { id: 'PAN', name: 'Panama', code: 'pan', groupLetter: 'L', color: palette[2] },
 ];
 
 const communitySpecialOrder = [
@@ -87,12 +88,28 @@ const searchable = (parts: Array<string | undefined>) =>
     .join(' ')
     .toLowerCase();
 
+const teamGroupId = (team: TeamDefinition) => team.id.toLowerCase();
+
 const teamByName = new Map<string, TeamDefinition>();
+const teamById = new Map<string, TeamDefinition>();
 
 officialTeams.forEach((team) => {
   teamByName.set(team.name, team);
+  teamById.set(team.id, team);
   team.aliases?.forEach((alias) => teamByName.set(alias, team));
 });
+
+const resolveTeamForRow = (row: ChecklistRow) => {
+  const teamId = row.id.match(/^[A-Z]+/)?.[0];
+
+  if (teamId) {
+    const matchedTeam = teamById.get(teamId);
+
+    if (matchedTeam) {
+      return matchedTeam;
+    }
+  }
+};
 
 const specialGroupNameForRow = (row: ChecklistRow) => {
   if (row.type.startsWith('Coca Cola /') || row.type.startsWith('Extra /')) {
@@ -142,7 +159,7 @@ const groups: AlbumTemplateGroup[] = [];
 
 officialTeams.forEach((team, sortOrder) => {
   groups.push({
-    id: groupIdForName(team.name),
+    id: teamGroupId(team),
     name: team.name,
     section: 'team',
     groupLetter: team.groupLetter,
@@ -170,9 +187,9 @@ communitySpecialOrder.forEach((name, index) => {
 const existingGroupIds = new Set(groups.map((group) => group.id));
 
 fifa2026ChecklistRows.forEach((row) => {
-  const team = teamByName.get(row.section);
+  const team = resolveTeamForRow(row);
   const groupName = team ? team.name : specialGroupNameForRow(row);
-  const id = groupIdForName(groupName);
+  const id = team ? teamGroupId(team) : groupIdForName(groupName);
 
   if (!existingGroupIds.has(id)) {
     existingGroupIds.add(id);
@@ -194,9 +211,9 @@ fifa2026ChecklistRows.forEach((row) => {
 const positionByGroup = new Map<string, number>();
 
 const slots: StickerSlot[] = fifa2026ChecklistRows.map((row) => {
-  const team = teamByName.get(row.section);
+  const team = resolveTeamForRow(row);
   const groupName = team ? team.name : specialGroupNameForRow(row);
-  const groupId = groupIdForName(groupName);
+  const groupId = team ? teamGroupId(team) : groupIdForName(groupName);
   const currentIndex = positionByGroup.get(groupId) ?? 0;
   const slotType = slotTypeForRow(row);
 
