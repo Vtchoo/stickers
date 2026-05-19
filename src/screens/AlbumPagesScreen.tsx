@@ -1,5 +1,6 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { memo, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import styled from 'styled-components/native';
 
 import {
@@ -22,10 +23,23 @@ import {
 	Subtitle,
 } from '../components/ui';
 import { useAlbums } from '../context/AlbumsContext';
+import type { AlbumTemplateGroup, StickerSlot } from '../models/types';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../utils/album';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
+type CollapsedState = Record<string, boolean>;
+
+type GroupSectionProps = {
+	albumId: string;
+	entryMap: Record<string, number>;
+	group: AlbumTemplateGroup;
+	isCollapsed: boolean;
+	registerMode: boolean;
+	sectionSlots: StickerSlot[];
+	setCollapsed: Dispatch<SetStateAction<CollapsedState>>;
+};
 
 const Grid = styled.View`
   flex-direction: row;
@@ -70,11 +84,117 @@ const CollapseButtonText = styled(GhostButtonText)`
 	line-height: 20px;
 `;
 
+const EMPTY_SLOTS: StickerSlot[] = [];
+
+const AlbumGroupSection = memo(
+	({
+		albumId,
+		entryMap,
+		group,
+		isCollapsed,
+		registerMode,
+		sectionSlots,
+		setCollapsed,
+	}: GroupSectionProps) => {
+		const navigation = useNavigation<Navigation>();
+		const { addSticker, removeSticker } = useAlbums();
+		const groupStats = calculateGroupStats(sectionSlots, entryMap);
+		const progressLabel = `${groupStats.ownedUnique}/${groupStats.totalSlots}${groupStats.duplicateCount > 0 ? `/${groupStats.duplicateCount}` : ''}`;
+
+		return (
+			<Card>
+				<RowBetween>
+					<Row style={{ flex: 1, alignItems: 'flex-start' }}>
+						{group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
+						<Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
+					</Row>
+					<CollapseButton
+						accessibilityLabel={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`}
+						onPress={() =>
+							setCollapsed((current) => ({
+								...current,
+								[group.id]: !isCollapsed,
+							}))
+						}
+					>
+						<CollapseButtonText>{isCollapsed ? '▾' : '▴'}</CollapseButtonText>
+					</CollapseButton>
+				</RowBetween>
+				<SmallText>{group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'}</SmallText>
+				<Row style={{ marginTop: 8, alignItems: 'center' }}>
+					<SmallText>{progressLabel}</SmallText>
+					<InlineProgressRail>
+						<ProgressFill $width={groupStats.completionPercentage} />
+					</InlineProgressRail>
+				</Row>
+
+				{!isCollapsed ? (
+					<Grid>
+						{sectionSlots.map((slot) => {
+							const quantity = getSlotQuantity(entryMap, slot.id);
+							const duplicates = getDuplicateCount(quantity);
+
+							return (
+								<SlotTile
+									key={slot.id}
+									$owned={quantity > 0}
+									$duplicate={duplicates > 0}
+									onPress={() =>
+										registerMode
+											? addSticker(albumId, slot.id)
+											: navigation.navigate('RegisterSticker', {
+												albumId,
+												initialSlotId: slot.id,
+											})
+									}
+									onLongPress={() => {
+										if (duplicates > 0) {
+											removeSticker(albumId, slot.id);
+										}
+									}}
+								>
+									<SmallText>{slot.id}</SmallText>
+									<Heading style={{ fontSize: 14 }}>{slot.label}</Heading>
+									<SmallText>{quantity > 0 ? `x${quantity}` : 'empty'}</SmallText>
+									{duplicates > 0 ? (
+										<Badge $tone="warning" style={{ alignSelf: 'flex-start', marginTop: 6 }}>
+											<BadgeText>+{duplicates}</BadgeText>
+										</Badge>
+									) : null}
+								</SlotTile>
+							);
+						})}
+					</Grid>
+				) : null}
+			</Card>
+		);
+	},
+	(prevProps, nextProps) => {
+		if (
+			prevProps.albumId !== nextProps.albumId ||
+			prevProps.group !== nextProps.group ||
+			prevProps.isCollapsed !== nextProps.isCollapsed ||
+			prevProps.registerMode !== nextProps.registerMode ||
+			prevProps.sectionSlots !== nextProps.sectionSlots
+		) {
+			return false;
+		}
+
+		for (const slot of prevProps.sectionSlots) {
+			if (getSlotQuantity(prevProps.entryMap, slot.id) !== getSlotQuantity(nextProps.entryMap, slot.id)) {
+				return false;
+			}
+		}
+
+		return true;
+	},
+);
+
 export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 	const { albumId } = route.params;
-	const { getAlbumById, getTemplateById, getEntriesForAlbum, addSticker, removeSticker } = useAlbums();
+	const { getAlbumById, getTemplateById, getEntriesForAlbum } = useAlbums();
 	const [registerMode, setRegisterMode] = useState(false);
-	const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+	const [collapsed, setCollapsed] = useState<CollapsedState>({});
 
 	const album = getAlbumById(albumId);
 	const template = album ? getTemplateById(album.templateId) : undefined;
@@ -92,6 +212,19 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 	}
 
 	const entryMap = buildEntryMap(getEntriesForAlbum(album.id));
+	const slotsByGroupId = useMemo(() => {
+		const nextSlotsByGroupId: Record<string, StickerSlot[]> = {};
+
+		for (const slot of template.slots) {
+			if (!nextSlotsByGroupId[slot.groupId]) {
+				nextSlotsByGroupId[slot.groupId] = [];
+			}
+
+			nextSlotsByGroupId[slot.groupId].push(slot);
+		}
+
+		return nextSlotsByGroupId;
+	}, [template]);
 
 	return (
 		<Screen>
@@ -110,82 +243,20 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 				</Card>
 
 				{template.groups.map((group) => {
-					const sectionSlots = template.slots.filter((slot) => slot.groupId === group.id);
-					const groupStats = calculateGroupStats(sectionSlots, entryMap);
-					const progressLabel = `${groupStats.ownedUnique}/${groupStats.totalSlots}${groupStats.duplicateCount > 0 ? `/${groupStats.duplicateCount}` : ''}`;
+					const sectionSlots = slotsByGroupId[group.id] ?? EMPTY_SLOTS;
 					const isCollapsed = collapsed[group.id] ?? true;
 
 					return (
-						<Card key={group.id}>
-							<RowBetween>
-								<Row style={{ flex: 1, alignItems: 'flex-start' }}>
-									{group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
-									<Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
-								</Row>
-								<CollapseButton
-									accessibilityLabel={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`}
-									onPress={() =>
-										setCollapsed((current) => ({
-											...current,
-											[group.id]: !isCollapsed,
-										}))
-									}
-								>
-									<CollapseButtonText>{isCollapsed ? '▾' : '▴'}</CollapseButtonText>
-								</CollapseButton>
-							</RowBetween>
-							<SmallText>{group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'}</SmallText>
-							<Row style={{ marginTop: 8, alignItems: 'center' }}>
-								<SmallText>{progressLabel}</SmallText>
-								<InlineProgressRail>
-								<ProgressFill $width={groupStats.completionPercentage} />
-								</InlineProgressRail>
-							</Row>
-
-							{!isCollapsed ? (
-								// <Card style={{ backgroundColor: '#f8f2e2' }}>
-								<>
-									<Grid>
-										{sectionSlots.map((slot) => {
-											const quantity = getSlotQuantity(entryMap, slot.id);
-											const duplicates = getDuplicateCount(quantity);
-
-											return (
-												<SlotTile
-													key={slot.id}
-													$owned={quantity > 0}
-													$duplicate={duplicates > 0}
-													onPress={() =>
-														registerMode
-															? addSticker(album.id, slot.id)
-															: navigation.navigate('RegisterSticker', {
-																albumId: album.id,
-																initialSlotId: slot.id,
-															})
-													}
-													// remove one sticker on long press if duplicates exist
-													onLongPress={() => {
-														if (duplicates > 0) {
-															removeSticker(album.id, slot.id);
-														}
-													}}
-												>
-													<SmallText>{slot.id}</SmallText>
-													<Heading style={{ fontSize: 14 }}>{slot.label}</Heading>
-													<SmallText>{quantity > 0 ? `x${quantity}` : 'empty'}</SmallText>
-													{duplicates > 0 ? (
-														<Badge $tone="warning" style={{ alignSelf: 'flex-start', marginTop: 6 }}>
-															<BadgeText>+{duplicates}</BadgeText>
-														</Badge>
-													) : null}
-												</SlotTile>
-											);
-										})}
-									</Grid>
-								</>
-								// </Card>
-							) : null}
-						</Card>
+						<AlbumGroupSection
+							key={group.id}
+							albumId={album.id}
+							entryMap={entryMap}
+							group={group}
+							isCollapsed={isCollapsed}
+							registerMode={registerMode}
+							sectionSlots={sectionSlots}
+							setCollapsed={setCollapsed}
+						/>
 					);
 				})}
 			</ScrollContent>
