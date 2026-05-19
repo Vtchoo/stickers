@@ -57,6 +57,19 @@ const InlineProgressRail = styled(ProgressRail)`
 	margin-right: ${(props) => props.theme.spacing.sm}px;
 `;
 
+const CollapseButton = styled(GhostButton)`
+	padding-top: 6px;
+	padding-bottom: 6px;
+	padding-left: 10px;
+	padding-right: 10px;
+	min-width: 0;
+`;
+
+const CollapseButtonText = styled(GhostButtonText)`
+	font-size: 20px;
+	line-height: 20px;
+`;
+
 export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 	const { albumId } = route.params;
 	const { getAlbumById, getTemplateById, getEntriesForAlbum, addSticker } = useAlbums();
@@ -109,7 +122,8 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 									{group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
 									<Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
 								</Row>
-								<GhostButton
+								<CollapseButton
+									accessibilityLabel={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`}
 									onPress={() =>
 										setCollapsed((current) => ({
 											...current,
@@ -117,8 +131,8 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 										}))
 									}
 								>
-									<GhostButtonText>{isCollapsed ? 'Show' : 'Hide'}</GhostButtonText>
-								</GhostButton>
+									<CollapseButtonText>{isCollapsed ? '▾' : '▴'}</CollapseButtonText>
+								</CollapseButton>
 							</RowBetween>
 							<SmallText>{group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'}</SmallText>
 							<Row style={{ marginTop: 8, alignItems: 'center' }}>
