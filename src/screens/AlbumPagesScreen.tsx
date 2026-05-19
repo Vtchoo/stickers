@@ -145,12 +145,6 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 							{!isCollapsed ? (
 								// <Card style={{ backgroundColor: '#f8f2e2' }}>
 								<>
-									<RowBetween>
-										<Subtitle>All stickers</Subtitle>
-										<Badge>
-											<BadgeText>{sectionSlots.length} slots</BadgeText>
-										</Badge>
-									</RowBetween>
 									<Grid>
 										{sectionSlots.map((slot) => {
 											const quantity = getSlotQuantity(entryMap, slot.id);
