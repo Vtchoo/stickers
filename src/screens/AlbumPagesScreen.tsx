@@ -23,7 +23,7 @@ import {
 } from '../components/ui';
 import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
-import { buildEntryMap, calculateGroupStats, formatPercentage, getDuplicateCount, getSlotQuantity } from '../utils/album';
+import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../utils/album';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
 
@@ -99,6 +99,7 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 				{template.groups.map((group) => {
 					const sectionSlots = template.slots.filter((slot) => slot.groupId === group.id);
 					const groupStats = calculateGroupStats(sectionSlots, entryMap);
+					const progressLabel = `${groupStats.ownedUnique}/${groupStats.totalSlots}${groupStats.duplicateCount > 0 ? `/${groupStats.duplicateCount}` : ''}`;
 					const isCollapsed = collapsed[group.id] ?? true;
 
 					return (
@@ -121,11 +122,10 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 							</RowBetween>
 							<SmallText>{group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'}</SmallText>
 							<Row style={{ marginTop: 8, alignItems: 'center' }}>
-								<SmallText>{groupStats.ownedUnique}/{groupStats.totalSlots}</SmallText>
+								<SmallText>{progressLabel}</SmallText>
 								<InlineProgressRail>
 								<ProgressFill $width={groupStats.completionPercentage} />
 								</InlineProgressRail>
-								<SmallText>{formatPercentage(groupStats.completionPercentage)}</SmallText>
 							</Row>
 
 							{!isCollapsed ? (
