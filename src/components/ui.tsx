@@ -32,7 +32,7 @@ export const Card = styled.View`
   border-radius: ${(props) => props.theme.radii.lg}px;
   padding: ${(props) => props.theme.spacing.md}px;
   margin-bottom: ${(props) => props.theme.spacing.md}px;
-  gap: ${(props) => props.theme.spacing.md}px;
+  gap: ${(props) => props.theme.spacing.sm}px;
 `;
 
 export const Row = styled.View`
