@@ -26,6 +26,7 @@ import { useAlbums } from '../context/AlbumsContext';
 import type { AlbumTemplateGroup, StickerSlot } from '../models/types';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../utils/album';
+import { View } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -39,6 +40,7 @@ type GroupSectionProps = {
 	registerMode: boolean;
 	sectionSlots: StickerSlot[];
 	setCollapsed: Dispatch<SetStateAction<CollapsedState>>;
+	compactMode: boolean;
 };
 
 const Grid = styled.View`
@@ -47,10 +49,10 @@ const Grid = styled.View`
   justify-content: space-between;
 `;
 
-const SlotTile = styled.Pressable<{ $owned: boolean; $duplicate: boolean }>`
-  width: 31%;
+const SlotTile = styled.Pressable<{ $owned: boolean; $duplicate: boolean, $compact: boolean }>`
+  width: ${(props) => (props.$compact ? '19%' : '31%')};
   min-height: 82px;
-  border-radius: ${(props) => props.theme.radii.md}px;
+  border-radius: ${(props) => props.$compact ? props.theme.radii.sm : props.theme.radii.md}px;
   background-color: ${(props) =>
 		props.$duplicate
 			? props.theme.colors.slotDuplicate
@@ -95,6 +97,7 @@ const AlbumGroupSection = memo(
 		registerMode,
 		sectionSlots,
 		setCollapsed,
+		compactMode,
 	}: GroupSectionProps) => {
 		const navigation = useNavigation<Navigation>();
 		const { addSticker, removeSticker } = useAlbums();
@@ -139,6 +142,7 @@ const AlbumGroupSection = memo(
 									key={slot.id}
 									$owned={quantity > 0}
 									$duplicate={duplicates > 0}
+									$compact={compactMode}
 									onPress={() =>
 										registerMode
 											? addSticker(albumId, slot.id)
@@ -153,10 +157,12 @@ const AlbumGroupSection = memo(
 										}
 									}}
 								>
-									<SmallText>{slot.id}</SmallText>
-									<Heading style={{ fontSize: 14 }}>{slot.label}</Heading>
-									<RowBetween>
-										<SmallText>{quantity > 0 ? `x${quantity}` : 'empty'}</SmallText>
+									<View style={{ flex: 1, width: '100%' }}>
+										<SmallText style={{ fontSize: compactMode ? 10 : 12 }}>{slot.id}</SmallText>
+										{!compactMode && <Heading style={{ fontSize: 14 }}>{slot.label}</Heading>}
+									</View>
+									<RowBetween style={{ width: '100%' }}>
+										<SmallText>{quantity > 0 ? `x${quantity}` : ' '}</SmallText>
 										{duplicates > 0 ? (
 											<SmallText style={{ color: '#D97706', fontWeight: 'bold' }}>+{duplicates}</SmallText>
 										) : null}
@@ -195,6 +201,7 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 	const { getAlbumById, getTemplateById, getEntriesForAlbum } = useAlbums();
 	const [registerMode, setRegisterMode] = useState(false);
 	const [collapsed, setCollapsed] = useState<CollapsedState>({});
+	const [compactMode, setCompactMode] = useState(false);
 
 	const album = getAlbumById(albumId);
 	const template = album ? getTemplateById(album.templateId) : undefined;
@@ -256,6 +263,7 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 							registerMode={registerMode}
 							sectionSlots={sectionSlots}
 							setCollapsed={setCollapsed}
+							compactMode={compactMode}
 						/>
 					);
 				})}
