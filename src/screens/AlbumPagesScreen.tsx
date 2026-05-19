@@ -72,7 +72,7 @@ const CollapseButtonText = styled(GhostButtonText)`
 
 export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 	const { albumId } = route.params;
-	const { getAlbumById, getTemplateById, getEntriesForAlbum, addSticker } = useAlbums();
+	const { getAlbumById, getTemplateById, getEntriesForAlbum, addSticker, removeSticker } = useAlbums();
 	const [registerMode, setRegisterMode] = useState(false);
 	const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
@@ -163,6 +163,12 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 																initialSlotId: slot.id,
 															})
 													}
+													// remove one sticker on long press if duplicates exist
+													onLongPress={() => {
+														if (duplicates > 0) {
+															removeSticker(album.id, slot.id);
+														}
+													}}
 												>
 													<SmallText>{slot.id}</SmallText>
 													<Heading style={{ fontSize: 14 }}>{slot.label}</Heading>
