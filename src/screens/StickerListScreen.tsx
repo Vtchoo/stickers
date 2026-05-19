@@ -114,8 +114,9 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
           return (
             <Card key={group.id}>
               <RowBetween>
-                <Row style={{ flex: 1 }}>
-                  <Label>{group.name}</Label>
+                <Row style={{ flex: 1, alignItems: 'flex-start' }}>
+                  {group.icon ? <Label style={{ marginRight: 8 }}>{group.icon}</Label> : null}
+                  <Label style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Label>
                   <Badge style={{ marginLeft: 8 }}>
                     <BadgeText>{sectionSlots.length}</BadgeText>
                   </Badge>

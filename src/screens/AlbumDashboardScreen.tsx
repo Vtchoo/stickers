@@ -13,6 +13,7 @@ import {
   HeroTitle,
   ProgressFill,
   ProgressRail,
+  Row,
   Screen,
   ScrollContent,
   StatCard,
@@ -135,7 +136,10 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
           <Heading>Section progress</Heading>
           {groupHighlights.map(({ group, stats: groupStats }) => (
             <Card key={group.id} style={{ marginBottom: 10 }}>
-              <Heading>{group.name}</Heading>
+              <Row style={{ alignItems: 'flex-start' }}>
+                {group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
+                <Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
+              </Row>
               <Subtitle>
                 {group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'} · {groupStats.ownedUnique}/{groupStats.totalSlots} owned
               </Subtitle>

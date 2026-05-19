@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export type StickerType = 'player' | 'team_logo' | 'stadium' | 'special' | 'other';
 
 export type StickerFilter = 'all' | 'owned' | 'missing' | 'duplicates';
@@ -5,6 +7,7 @@ export type StickerFilter = 'all' | 'owned' | 'missing' | 'duplicates';
 export interface AlbumTemplateGroup {
   id: string;
   name: string;
+  icon?: ReactNode;
   section: 'team' | 'special';
   groupLetter?: string;
   teamCode?: string;

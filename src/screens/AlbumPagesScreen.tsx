@@ -93,7 +93,10 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 					return (
 						<Card key={group.id}>
 							<RowBetween>
-								<Heading>{group.name}</Heading>
+								<Row style={{ flex: 1, alignItems: 'flex-start' }}>
+									{group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
+									<Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
+								</Row>
 								<GhostButton
 									onPress={() =>
 										setCollapsed((current) => ({
