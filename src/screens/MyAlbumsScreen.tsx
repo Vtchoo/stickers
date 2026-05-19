@@ -1,0 +1,205 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as Clipboard from 'expo-clipboard';
+import { useState } from 'react';
+import { Alert, Modal, Pressable } from 'react-native';
+import styled from 'styled-components/native';
+
+import {
+  Badge,
+  BadgeText,
+  Button,
+  ButtonText,
+  Card,
+  EmptyState,
+  GhostButton,
+  GhostButtonText,
+  Heading,
+  Input,
+  Label,
+  ProgressFill,
+  ProgressRail,
+  Row,
+  RowBetween,
+  Screen,
+  ScrollContent,
+  SmallText,
+  Subtitle,
+} from '../components/ui';
+import { useAlbums } from '../context/AlbumsContext';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { buildEntryMap, calculateAlbumStats, formatPercentage } from '../utils/album';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'MyAlbums'>;
+
+const ModalLayer = styled.View`
+  flex: 1;
+  justify-content: center;
+  padding: 20px;
+`;
+
+const ModalBackdrop = styled(Pressable)`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(15, 20, 28, 0.52);
+`;
+
+const ModalCenter = styled.View`
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalCard = styled.View`
+  width: 100%;
+  max-height: 86%;
+  background-color: ${(props) => props.theme.colors.card};
+  border-width: 1px;
+  border-color: ${(props) => props.theme.colors.border};
+  border-radius: ${(props) => props.theme.radii.lg}px;
+  padding: ${(props) => props.theme.spacing.md}px;
+`;
+
+const ModalContent = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+  bounces: false,
+})`
+  flex-grow: 1;
+`;
+
+const ModalFooter = styled.View`
+  margin-top: ${(props) => props.theme.spacing.md}px;
+`;
+
+const ImportInput = styled(Input)`
+  height: 220px;
+  max-height: 220px;
+  width: 100%;
+  text-align-vertical: top;
+`;
+
+export const MyAlbumsScreen = ({ navigation }: Props) => {
+  const { userAlbums, getTemplateById, getEntriesForAlbum, exportAlbum, importAlbum } = useAlbums();
+  const [isImportVisible, setIsImportVisible] = useState(false);
+  const [importValue, setImportValue] = useState('');
+
+  const handleExport = async (albumId: string) => {
+    try {
+      await Clipboard.setStringAsync(exportAlbum(albumId));
+      Alert.alert('Album exported', 'The album JSON has been copied to the clipboard.');
+    } catch (error) {
+      Alert.alert('Export failed', error instanceof Error ? error.message : 'Unable to export this album.');
+    }
+  };
+
+  const handleImport = () => {
+    try {
+      const importedAlbum = importAlbum(importValue);
+      setImportValue('');
+      setIsImportVisible(false);
+      Alert.alert('Album imported', `${importedAlbum.customName} is now available in My Albums.`);
+      navigation.navigate('AlbumDashboard', { albumId: importedAlbum.id });
+    } catch (error) {
+      Alert.alert('Import failed', error instanceof Error ? error.message : 'Unable to import this album.');
+    }
+  };
+
+  return (
+    <Screen>
+      <ScrollContent>
+        <Card>
+          <Heading>Transfer albums</Heading>
+          <Subtitle>Export copies an album JSON snapshot to the clipboard. Import creates a new local album from pasted JSON.</Subtitle>
+          <Button style={{ marginTop: 16 }} onPress={() => setIsImportVisible(true)}>
+            <ButtonText>Import album JSON</ButtonText>
+          </Button>
+        </Card>
+
+        {userAlbums.length === 0 ? (
+          <EmptyState>
+            <Heading>No albums yet</Heading>
+            <Subtitle>Create a personal album from the home screen to start tracking.</Subtitle>
+          </EmptyState>
+        ) : null}
+
+        {userAlbums.map((album) => {
+          const template = getTemplateById(album.templateId);
+
+          if (!template) {
+            return null;
+          }
+
+          const stats = calculateAlbumStats(template, buildEntryMap(getEntriesForAlbum(album.id)));
+
+          return (
+            <Card key={album.id}>
+              <RowBetween>
+                <Heading>{album.customName}</Heading>
+                <Badge>
+                  <BadgeText>{formatPercentage(stats.completionPercentage)}</BadgeText>
+                </Badge>
+              </RowBetween>
+              <Subtitle>{template.name}</Subtitle>
+              <SmallText>{new Date(album.createdAt).toLocaleString()}</SmallText>
+              <ProgressRail>
+                <ProgressFill $width={stats.completionPercentage} />
+              </ProgressRail>
+              <Row style={{ marginTop: 12, justifyContent: 'space-between' }}>
+                <SmallText>{stats.ownedUnique} owned</SmallText>
+                <SmallText>{stats.missing} missing</SmallText>
+                <SmallText>{stats.duplicateCount} duplicates</SmallText>
+              </Row>
+              <Row style={{ marginTop: 16, gap: 10 }}>
+                <Button style={{ flex: 1 }} onPress={() => navigation.navigate('AlbumDashboard', { albumId: album.id })}>
+                  <ButtonText>Open</ButtonText>
+                </Button>
+                <Button style={{ flex: 1 }} onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
+                  <ButtonText>Trade list</ButtonText>
+                </Button>
+              </Row>
+              <GhostButton style={{ marginTop: 10 }} onPress={() => void handleExport(album.id)}>
+                <GhostButtonText>Export JSON</GhostButtonText>
+              </GhostButton>
+            </Card>
+          );
+        })}
+
+        <Modal visible={isImportVisible} transparent animationType="fade" onRequestClose={() => setIsImportVisible(false)}>
+          <ModalLayer>
+            <ModalBackdrop onPress={() => setIsImportVisible(false)} />
+            <ModalCenter pointerEvents="box-none">
+              <ModalCard>
+                <ModalContent>
+                  <Heading>Import album</Heading>
+                  <Subtitle>Paste a previously exported album JSON payload. Import creates a new album and keeps your existing albums untouched.</Subtitle>
+                  <Label style={{ marginTop: 16 }}>Album JSON</Label>
+                  <ImportInput
+                    value={importValue}
+                    onChangeText={setImportValue}
+                    multiline
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    placeholder="Paste album JSON here"
+                    placeholderTextColor="#8a8578"
+                  />
+                </ModalContent>
+                <ModalFooter>
+                  <Row style={{ gap: 10 }}>
+                    <GhostButton style={{ flex: 1 }} onPress={() => setIsImportVisible(false)}>
+                      <GhostButtonText>Cancel</GhostButtonText>
+                    </GhostButton>
+                    <Button style={{ flex: 1 }} onPress={handleImport}>
+                      <ButtonText>Import</ButtonText>
+                    </Button>
+                  </Row>
+                </ModalFooter>
+              </ModalCard>
+            </ModalCenter>
+          </ModalLayer>
+        </Modal>
+      </ScrollContent>
+    </Screen>
+  );
+};
