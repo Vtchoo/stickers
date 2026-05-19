@@ -155,12 +155,12 @@ const AlbumGroupSection = memo(
 								>
 									<SmallText>{slot.id}</SmallText>
 									<Heading style={{ fontSize: 14 }}>{slot.label}</Heading>
-									<SmallText>{quantity > 0 ? `x${quantity}` : 'empty'}</SmallText>
-									{duplicates > 0 ? (
-										<Badge $tone="warning" style={{ alignSelf: 'flex-start', marginTop: 6 }}>
-											<BadgeText>+{duplicates}</BadgeText>
-										</Badge>
-									) : null}
+									<RowBetween>
+										<SmallText>{quantity > 0 ? `x${quantity}` : 'empty'}</SmallText>
+										{duplicates > 0 ? (
+											<SmallText style={{ color: '#D97706', fontWeight: 'bold' }}>+{duplicates}</SmallText>
+										) : null}
+									</RowBetween>
 								</SlotTile>
 							);
 						})}
