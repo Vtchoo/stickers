@@ -12,6 +12,8 @@ import {
 	GhostButton,
 	GhostButtonText,
 	Heading,
+	ProgressFill,
+	ProgressRail,
 	Row,
 	RowBetween,
 	Screen,
@@ -21,7 +23,7 @@ import {
 } from '../components/ui';
 import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
-import { buildEntryMap, getDuplicateCount, getSlotQuantity } from '../utils/album';
+import { buildEntryMap, calculateGroupStats, formatPercentage, getDuplicateCount, getSlotQuantity } from '../utils/album';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
 
@@ -45,6 +47,14 @@ const SlotTile = styled.Pressable<{ $owned: boolean; $duplicate: boolean }>`
   margin-bottom: ${(props) => props.theme.spacing.sm}px;
   border-width: 1px;
   border-color: ${(props) => props.theme.colors.border};
+`;
+
+const InlineProgressRail = styled(ProgressRail)`
+	flex: 1;
+	height: 6px;
+	margin-top: 0;
+	margin-left: ${(props) => props.theme.spacing.sm}px;
+	margin-right: ${(props) => props.theme.spacing.sm}px;
 `;
 
 export const AlbumPagesScreen = ({ navigation, route }: Props) => {
@@ -88,6 +98,7 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 
 				{template.groups.map((group) => {
 					const sectionSlots = template.slots.filter((slot) => slot.groupId === group.id);
+					const groupStats = calculateGroupStats(sectionSlots, entryMap);
 					const isCollapsed = collapsed[group.id] ?? true;
 
 					return (
@@ -109,6 +120,13 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 								</GhostButton>
 							</RowBetween>
 							<SmallText>{group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'}</SmallText>
+							<Row style={{ marginTop: 8, alignItems: 'center' }}>
+								<SmallText>{groupStats.ownedUnique}/{groupStats.totalSlots}</SmallText>
+								<InlineProgressRail>
+								<ProgressFill $width={groupStats.completionPercentage} />
+								</InlineProgressRail>
+								<SmallText>{formatPercentage(groupStats.completionPercentage)}</SmallText>
+							</Row>
 
 							{!isCollapsed ? (
 								// <Card style={{ backgroundColor: '#f8f2e2' }}>
