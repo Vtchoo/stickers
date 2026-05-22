@@ -21,7 +21,8 @@
         "backgroundColor": "#f7f0df"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vtchoo.stickers"
     },
     "web": {
       "favicon": "./assets/favicon.png"
