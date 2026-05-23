@@ -9,6 +9,11 @@ type AlbumTransferEntry = {
   quantity: number;
 };
 
+type TradeSettlement = {
+  slotId: string;
+  givenAway: number;
+};
+
 type AlbumTransferPayload = {
   version: 1;
   exportedAt: string;
@@ -29,6 +34,7 @@ type AlbumsContextValue = {
   addSticker: (albumId: string, slotId: string) => void;
   removeSticker: (albumId: string, slotId: string) => void;
   markMissing: (albumId: string, slotId: string) => void;
+  settleTrade: (albumId: string, trades: TradeSettlement[]) => void;
   exportAlbum: (albumId: string) => string;
   importAlbum: (serializedAlbum: string) => UserAlbum;
   getTemplateById: (templateId: string) => AlbumTemplate | undefined;
@@ -150,6 +156,65 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
     updateQuantity(albumId, slotId, 0);
   };
 
+  const settleTrade = (albumId: string, trades: TradeSettlement[]) => {
+    if (trades.length === 0) {
+      return;
+    }
+
+    const tradeMap = new Map<string, number>();
+
+    trades.forEach((trade) => {
+      if (!Number.isInteger(trade.givenAway) || trade.givenAway < 0) {
+        throw new Error('Trade settlement contains an invalid quantity.');
+      }
+
+      if (trade.givenAway === 0) {
+        return;
+      }
+
+      tradeMap.set(trade.slotId, (tradeMap.get(trade.slotId) ?? 0) + trade.givenAway);
+    });
+
+    setUserStickerEntries((currentEntries) => {
+      const nextEntries: UserStickerEntry[] = [];
+
+      for (const entry of currentEntries) {
+        if (entry.albumId !== albumId) {
+          nextEntries.push(entry);
+          continue;
+        }
+
+        const givenAway = tradeMap.get(entry.slotId) ?? 0;
+
+        if (givenAway === 0) {
+          nextEntries.push(entry);
+          continue;
+        }
+
+        if (givenAway > entry.quantity - 1) {
+          throw new Error(`Cannot give away more duplicates than you own for ${entry.slotId}.`);
+        }
+
+        const nextQuantity = entry.quantity - givenAway;
+
+        if (nextQuantity > 0) {
+          nextEntries.push({
+            ...entry,
+            quantity: nextQuantity,
+          });
+        }
+
+        tradeMap.delete(entry.slotId);
+      }
+
+      if (tradeMap.size > 0) {
+        throw new Error('Trade settlement contains stickers that are not available as duplicates.');
+      }
+
+      return nextEntries;
+    });
+  };
+
   const exportAlbum = (albumId: string) => {
     const album = userAlbums.find((currentAlbum) => currentAlbum.id === albumId);
 
@@ -245,6 +310,7 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
         addSticker,
         removeSticker,
         markMissing,
+        settleTrade,
         exportAlbum,
         importAlbum,
         getTemplateById,
