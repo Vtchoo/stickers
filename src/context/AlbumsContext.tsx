@@ -37,6 +37,7 @@ type AlbumsContextValue = {
   settleTrade: (albumId: string, trades: TradeSettlement[]) => void;
   exportAlbum: (albumId: string) => string;
   importAlbum: (serializedAlbum: string) => UserAlbum;
+  updateAlbumFromImport: (albumId: string, serializedAlbum: string) => UserAlbum;
   getTemplateById: (templateId: string) => AlbumTemplate | undefined;
   getAlbumById: (albumId: string) => UserAlbum | undefined;
   getEntriesForAlbum: (albumId: string) => UserStickerEntry[];
@@ -45,6 +46,43 @@ type AlbumsContextValue = {
 const AlbumsContext = createContext<AlbumsContextValue | undefined>(undefined);
 
 const createId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const parseAlbumTransferPayload = (serializedAlbum: string) => {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(serializedAlbum);
+  } catch {
+    throw new Error('Invalid JSON.');
+  }
+
+  if (!isAlbumTransferPayload(parsed)) {
+    throw new Error('Unsupported album export format.');
+  }
+
+  const template = albumTemplates.find((currentTemplate) => currentTemplate.id === parsed.album.templateId);
+
+  if (!template) {
+    throw new Error('This album template is not available in the app.');
+  }
+
+  const validSlotIds = new Set(template.slots.map((slot) => slot.id));
+  const invalidEntry = parsed.entries.find(
+    (entry) =>
+      !Number.isInteger(entry.quantity) ||
+      entry.quantity <= 0 ||
+      !validSlotIds.has(entry.slotId),
+  );
+
+  if (invalidEntry) {
+    throw new Error('The pasted album contains unsupported sticker entries.');
+  }
+
+  return {
+    payload: parsed,
+    template,
+  };
+};
 
 const isAlbumTransferPayload = (value: unknown): value is AlbumTransferPayload => {
   if (!value || typeof value !== 'object') {
@@ -242,44 +280,16 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const importAlbum = (serializedAlbum: string) => {
-    let parsed: unknown;
-
-    try {
-      parsed = JSON.parse(serializedAlbum);
-    } catch {
-      throw new Error('Invalid JSON.');
-    }
-
-    if (!isAlbumTransferPayload(parsed)) {
-      throw new Error('Unsupported album export format.');
-    }
-
-    const template = albumTemplates.find((currentTemplate) => currentTemplate.id === parsed.album.templateId);
-
-    if (!template) {
-      throw new Error('This album template is not available in the app.');
-    }
-
-    const validSlotIds = new Set(template.slots.map((slot) => slot.id));
-    const invalidEntry = parsed.entries.find(
-      (entry) =>
-        !Number.isInteger(entry.quantity) ||
-        entry.quantity <= 0 ||
-        !validSlotIds.has(entry.slotId),
-    );
-
-    if (invalidEntry) {
-      throw new Error('The pasted album contains unsupported sticker entries.');
-    }
+    const { payload } = parseAlbumTransferPayload(serializedAlbum);
 
     const importedAlbum: UserAlbum = {
       id: createId('album'),
-      templateId: parsed.album.templateId,
-      customName: parsed.album.customName.trim() || 'Imported album',
+      templateId: payload.album.templateId,
+      customName: payload.album.customName.trim() || 'Imported album',
       createdAt: new Date().toISOString(),
     };
 
-    const importedEntries: UserStickerEntry[] = parsed.entries.map((entry) => ({
+    const importedEntries: UserStickerEntry[] = payload.entries.map((entry) => ({
       albumId: importedAlbum.id,
       slotId: entry.slotId,
       quantity: entry.quantity,
@@ -289,6 +299,38 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
     setUserStickerEntries((currentEntries) => [...importedEntries, ...currentEntries]);
 
     return importedAlbum;
+  };
+
+  const updateAlbumFromImport = (albumId: string, serializedAlbum: string) => {
+    const existingAlbum = userAlbums.find((album) => album.id === albumId);
+
+    if (!existingAlbum) {
+      throw new Error('Album not found.');
+    }
+
+    const { payload } = parseAlbumTransferPayload(serializedAlbum);
+
+    const updatedAlbum: UserAlbum = {
+      ...existingAlbum,
+      templateId: payload.album.templateId,
+      customName: payload.album.customName.trim() || existingAlbum.customName,
+    };
+
+    const updatedEntries: UserStickerEntry[] = payload.entries.map((entry) => ({
+      albumId,
+      slotId: entry.slotId,
+      quantity: entry.quantity,
+    }));
+
+    setUserAlbums((currentAlbums) =>
+      currentAlbums.map((album) => (album.id === albumId ? updatedAlbum : album)),
+    );
+    setUserStickerEntries((currentEntries) => [
+      ...updatedEntries,
+      ...currentEntries.filter((entry) => entry.albumId !== albumId),
+    ]);
+
+    return updatedAlbum;
   };
 
   const getTemplateById = (templateId: string) =>
@@ -313,6 +355,7 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
         settleTrade,
         exportAlbum,
         importAlbum,
+        updateAlbumFromImport,
         getTemplateById,
         getAlbumById,
         getEntriesForAlbum,

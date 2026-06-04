@@ -81,9 +81,22 @@ const ImportInput = styled(Input)`
 `;
 
 export const MyAlbumsScreen = ({ navigation }: Props) => {
-  const { userAlbums, getTemplateById, getEntriesForAlbum, exportAlbum, importAlbum } = useAlbums();
+  const { userAlbums, getTemplateById, getEntriesForAlbum, exportAlbum, importAlbum, updateAlbumFromImport } = useAlbums();
   const [isImportVisible, setIsImportVisible] = useState(false);
   const [importValue, setImportValue] = useState('');
+  const [albumIdToUpdate, setAlbumIdToUpdate] = useState<string | null>(null);
+
+  const closeImportModal = () => {
+    setImportValue('');
+    setAlbumIdToUpdate(null);
+    setIsImportVisible(false);
+  };
+
+  const openImportModal = (targetAlbumId?: string) => {
+    setImportValue('');
+    setAlbumIdToUpdate(targetAlbumId ?? null);
+    setIsImportVisible(true);
+  };
 
   const handleExport = async (albumId: string) => {
     try {
@@ -96,13 +109,23 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
 
   const handleImport = () => {
     try {
+      if (albumIdToUpdate) {
+        const updatedAlbum = updateAlbumFromImport(albumIdToUpdate, importValue);
+        closeImportModal();
+        Alert.alert('Album updated', `${updatedAlbum.customName} was replaced with the pasted JSON.`);
+        navigation.navigate('AlbumDashboard', { albumId: updatedAlbum.id });
+        return;
+      }
+
       const importedAlbum = importAlbum(importValue);
-      setImportValue('');
-      setIsImportVisible(false);
+      closeImportModal();
       Alert.alert('Album imported', `${importedAlbum.customName} is now available in My Albums.`);
       navigation.navigate('AlbumDashboard', { albumId: importedAlbum.id });
     } catch (error) {
-      Alert.alert('Import failed', error instanceof Error ? error.message : 'Unable to import this album.');
+      Alert.alert(
+        albumIdToUpdate ? 'Album update failed' : 'Import failed',
+        error instanceof Error ? error.message : 'Unable to process this album JSON.',
+      );
     }
   };
 
@@ -112,7 +135,7 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
         <Card>
           <Heading>Transfer albums</Heading>
           <Subtitle>Export copies an album JSON snapshot to the clipboard. Import creates a new local album from pasted JSON.</Subtitle>
-          <Button style={{ marginTop: 16 }} onPress={() => setIsImportVisible(true)}>
+          <Button style={{ marginTop: 16 }} onPress={() => openImportModal()}>
             <ButtonText>Import album JSON</ButtonText>
           </Button>
         </Card>
@@ -162,18 +185,25 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
               <GhostButton style={{ marginTop: 10 }} onPress={() => void handleExport(album.id)}>
                 <GhostButtonText>Export JSON</GhostButtonText>
               </GhostButton>
+              <GhostButton style={{ marginTop: 10 }} onPress={() => openImportModal(album.id)}>
+                <GhostButtonText>Update from JSON</GhostButtonText>
+              </GhostButton>
             </Card>
           );
         })}
 
-        <Modal visible={isImportVisible} transparent animationType="fade" onRequestClose={() => setIsImportVisible(false)}>
+        <Modal visible={isImportVisible} transparent animationType="fade" onRequestClose={closeImportModal}>
           <ModalLayer>
-            <ModalBackdrop onPress={() => setIsImportVisible(false)} />
+            <ModalBackdrop onPress={closeImportModal} />
             <ModalCenter pointerEvents="box-none">
               <ModalCard>
                 <ModalContent>
-                  <Heading>Import album</Heading>
-                  <Subtitle>Paste a previously exported album JSON payload. Import creates a new album and keeps your existing albums untouched.</Subtitle>
+                  <Heading>{albumIdToUpdate ? 'Update album' : 'Import album'}</Heading>
+                  <Subtitle>
+                    {albumIdToUpdate
+                      ? 'Paste a previously exported album JSON payload. This will replace the selected album data with the pasted snapshot.'
+                      : 'Paste a previously exported album JSON payload. Import creates a new album and keeps your existing albums untouched.'}
+                  </Subtitle>
                   <Label style={{ marginTop: 16 }}>Album JSON</Label>
                   <ImportInput
                     value={importValue}
@@ -187,11 +217,11 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
                 </ModalContent>
                 <ModalFooter>
                   <Row style={{ gap: 10 }}>
-                    <GhostButton style={{ flex: 1 }} onPress={() => setIsImportVisible(false)}>
+                    <GhostButton style={{ flex: 1 }} onPress={closeImportModal}>
                       <GhostButtonText>Cancel</GhostButtonText>
                     </GhostButton>
                     <Button style={{ flex: 1 }} onPress={handleImport}>
-                      <ButtonText>Import</ButtonText>
+                      <ButtonText>{albumIdToUpdate ? 'Update album' : 'Import'}</ButtonText>
                     </Button>
                   </Row>
                 </ModalFooter>
