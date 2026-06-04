@@ -38,6 +38,7 @@ type AlbumsContextValue = {
   exportAlbum: (albumId: string) => string;
   importAlbum: (serializedAlbum: string) => UserAlbum;
   updateAlbumFromImport: (albumId: string, serializedAlbum: string) => UserAlbum;
+  deleteAlbum: (albumId: string) => void;
   getTemplateById: (templateId: string) => AlbumTemplate | undefined;
   getAlbumById: (albumId: string) => UserAlbum | undefined;
   getEntriesForAlbum: (albumId: string) => UserStickerEntry[];
@@ -333,6 +334,11 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
     return updatedAlbum;
   };
 
+  const deleteAlbum = (albumId: string) => {
+    setUserAlbums((current) => current.filter((album) => album.id !== albumId));
+    setUserStickerEntries((current) => current.filter((entry) => entry.albumId !== albumId));
+  };
+
   const getTemplateById = (templateId: string) =>
     albumTemplates.find((template) => template.id === templateId);
 
@@ -356,6 +362,7 @@ export const AlbumsProvider = ({ children }: { children: React.ReactNode }) => {
         exportAlbum,
         importAlbum,
         updateAlbumFromImport,
+        deleteAlbum,
         getTemplateById,
         getAlbumById,
         getEntriesForAlbum,

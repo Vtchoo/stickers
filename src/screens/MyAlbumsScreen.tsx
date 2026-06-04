@@ -43,7 +43,7 @@ const ModalBackdrop = styled(Pressable)`
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: rgba(15, 20, 28, 0.52);
+  background-color: rgba(15, 20, 28, 0.93);
 `;
 
 const ModalCenter = styled.View`
@@ -81,10 +81,11 @@ const ImportInput = styled(Input)`
 `;
 
 export const MyAlbumsScreen = ({ navigation }: Props) => {
-  const { userAlbums, getTemplateById, getEntriesForAlbum, exportAlbum, importAlbum, updateAlbumFromImport } = useAlbums();
+  const { userAlbums, getTemplateById, getEntriesForAlbum, exportAlbum, importAlbum, updateAlbumFromImport, deleteAlbum } = useAlbums();
   const [isImportVisible, setIsImportVisible] = useState(false);
   const [importValue, setImportValue] = useState('');
   const [albumIdToUpdate, setAlbumIdToUpdate] = useState<string | null>(null);
+  const [albumToDelete, setAlbumToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const closeImportModal = () => {
     setImportValue('');
@@ -188,9 +189,45 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
               <GhostButton style={{ marginTop: 10 }} onPress={() => openImportModal(album.id)}>
                 <GhostButtonText>Update from JSON</GhostButtonText>
               </GhostButton>
+              <Button style={{ marginTop: 10 }} $variant="danger" onPress={() => setAlbumToDelete({ id: album.id, name: album.customName })}>
+                <ButtonText>Delete album</ButtonText>
+              </Button>
             </Card>
           );
         })}
+
+        <Modal visible={albumToDelete !== null} transparent animationType="fade" onRequestClose={() => setAlbumToDelete(null)}>
+          <ModalLayer>
+            <ModalBackdrop onPress={() => setAlbumToDelete(null)} />
+            <ModalCenter pointerEvents="box-none">
+              <ModalCard>
+                <Heading>Delete album?</Heading>
+                <Subtitle style={{ marginTop: 8 }}>
+                  {`"${albumToDelete?.name}" and all its sticker data will be permanently removed. This cannot be undone.`}
+                </Subtitle>
+                <ModalFooter>
+                  <Row style={{ gap: 10 }}>
+                    <GhostButton style={{ flex: 1 }} onPress={() => setAlbumToDelete(null)}>
+                      <GhostButtonText>Cancel</GhostButtonText>
+                    </GhostButton>
+                    <Button
+                      style={{ flex: 1 }}
+                      $variant="danger"
+                      onPress={() => {
+                        if (albumToDelete) {
+                          deleteAlbum(albumToDelete.id);
+                          setAlbumToDelete(null);
+                        }
+                      }}
+                    >
+                      <ButtonText>Delete</ButtonText>
+                    </Button>
+                  </Row>
+                </ModalFooter>
+              </ModalCard>
+            </ModalCenter>
+          </ModalLayer>
+        </Modal>
 
         <Modal visible={isImportVisible} transparent animationType="fade" onRequestClose={closeImportModal}>
           <ModalLayer>
