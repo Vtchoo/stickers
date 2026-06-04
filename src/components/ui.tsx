@@ -98,15 +98,20 @@ export const Input = styled.TextInput`
   margin-top: ${(props) => props.theme.spacing.sm}px;
 `;
 
-export const Button = styled.Pressable<{ $variant?: 'primary' | 'secondary' | 'danger'; $block?: boolean }>`
+interface ButtonProps {
+  $variant?: 'primary' | 'secondary' | 'danger';
+  $block?: boolean;
+}
+
+export const Button = styled.Pressable<ButtonProps>`
   background-color: ${(props) =>
     props.$variant === 'secondary'
       ? props.theme.colors.surfaceStrong
       : props.$variant === 'danger'
         ? props.theme.colors.danger
         : props.theme.colors.primary};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  border-radius: ${(props) => props.theme.radii.sm}px;
+  padding: ${(props) => props.theme.spacing.sm}px;
   align-items: center;
   justify-content: center;
   ${(props) => (props.$block ? 'width: 100%;' : '')}
@@ -118,12 +123,19 @@ export const ButtonText = styled.Text`
   font-weight: 800;
 `;
 
-export const GhostButton = styled.Pressable`
+export const GhostButton = styled.Pressable<ButtonProps>`
   border-width: 1px;
   border-color: ${(props) => props.theme.colors.border};
   background-color: ${(props) => props.theme.colors.surface};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  border-radius: ${(props) => props.theme.radii.sm}px;
+  padding: ${(props) => props.theme.spacing.sm}px;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const TextButton = styled.Pressable<ButtonProps>`
+  background-color: transparent;
+  padding: ${(props) => props.theme.spacing.sm}px;
   align-items: center;
   justify-content: center;
 `;

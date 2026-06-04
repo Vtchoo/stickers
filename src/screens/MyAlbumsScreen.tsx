@@ -24,10 +24,12 @@ import {
   ScrollContent,
   SmallText,
   Subtitle,
+  TextButton,
 } from '../components/ui';
 import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateAlbumStats, formatPercentage } from '../utils/album';
+import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyAlbums'>;
 
@@ -183,15 +185,15 @@ export const MyAlbumsScreen = ({ navigation }: Props) => {
                   <ButtonText>Trade list</ButtonText>
                 </Button>
               </Row>
-              <GhostButton style={{ marginTop: 10 }} onPress={() => void handleExport(album.id)}>
+              <GhostButton onPress={() => void handleExport(album.id)}>
                 <GhostButtonText>Export JSON</GhostButtonText>
               </GhostButton>
-              <GhostButton style={{ marginTop: 10 }} onPress={() => openImportModal(album.id)}>
+              <GhostButton onPress={() => openImportModal(album.id)}>
                 <GhostButtonText>Update from JSON</GhostButtonText>
               </GhostButton>
-              <Button style={{ marginTop: 10 }} $variant="danger" onPress={() => setAlbumToDelete({ id: album.id, name: album.customName })}>
-                <ButtonText>Delete album</ButtonText>
-              </Button>
+              <TextButton $variant="danger" onPress={() => setAlbumToDelete({ id: album.id, name: album.customName })}>
+                <ButtonText style={{ color: theme.colors.danger }}>Delete album</ButtonText>
+              </TextButton>
             </Card>
           );
         })}
