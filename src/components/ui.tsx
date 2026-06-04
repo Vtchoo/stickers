@@ -11,6 +11,7 @@ export const ScrollContent = styled.ScrollView.attrs((props) => ({
   contentContainerStyle: {
     padding: props.theme.spacing.md,
     paddingBottom: props.theme.spacing.xl * 2,
+    gap: props.theme.spacing.md,
   },
   showsVerticalScrollIndicator: false,
 }))``;

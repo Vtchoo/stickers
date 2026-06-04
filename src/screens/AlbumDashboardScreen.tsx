@@ -24,6 +24,7 @@ import {
 import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateAlbumStats, calculateGroupStats, formatPercentage } from '../utils/album';
+import { Text, View } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumDashboard'>;
 
@@ -85,41 +86,35 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
           </Badge>
         </Hero>
 
-        <StatGrid>
-          <StatCard>
-            <Subtitle>Total slots</Subtitle>
-            <StatValue>{stats.totalSlots}</StatValue>
-          </StatCard>
-          <StatCard>
-            <Subtitle>Owned</Subtitle>
-            <StatValue>{stats.ownedUnique}</StatValue>
-          </StatCard>
-          <StatCard>
-            <Subtitle>Missing</Subtitle>
-            <StatValue>{stats.missing}</StatValue>
-          </StatCard>
-          <StatCard>
-            <Subtitle>Duplicates</Subtitle>
-            <StatValue>{stats.duplicateCount}</StatValue>
-          </StatCard>
-        </StatGrid>
+        <View style={{ gap: 8 }}>
+          <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+            <StatValue style={{ fontSize: 28 }}>{stats.ownedUnique} / {stats.totalSlots}</StatValue>
+            <Subtitle>Owned / Total</Subtitle>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+            <View style={{ alignItems: 'center' }}>
+              <Subtitle>Missing</Subtitle>
+              <StatValue style={{ fontSize: undefined }}>{stats.missing}</StatValue>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Subtitle>Duplicates</Subtitle>
+              <StatValue style={{ fontSize: undefined }}>{stats.duplicateCount}</StatValue>
+            </View>
+          </View>
+        </View>
 
-        <Card>
-          <Heading>Workflows</Heading>
-          <Subtitle>Switch between the list and album layouts, register new stickers, or jump straight to tradeables.</Subtitle>
-          <Button style={{ marginTop: 16 }} onPress={() => navigation.navigate('StickerList', { albumId: album.id })}>
-            <ButtonText>List view</ButtonText>
-          </Button>
-          <Button style={{ marginTop: 10 }} onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
-            <ButtonText>Album view</ButtonText>
-          </Button>
-          <Button style={{ marginTop: 10 }} onPress={() => navigation.navigate('RegisterSticker', { albumId: album.id })}>
-            <ButtonText>Register stickers</ButtonText>
-          </Button>
-          <Button style={{ marginTop: 10 }} onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
-            <ButtonText>Duplicates</ButtonText>
-          </Button>
-        </Card>
+        <Button onPress={() => navigation.navigate('StickerList', { albumId: album.id })}>
+          <ButtonText>List view</ButtonText>
+        </Button>
+        <Button onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
+          <ButtonText>Album view</ButtonText>
+        </Button>
+        <Button onPress={() => navigation.navigate('RegisterSticker', { albumId: album.id })}>
+          <ButtonText>Register stickers</ButtonText>
+        </Button>
+        <Button onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
+          <ButtonText>Duplicates</ButtonText>
+        </Button>
 
         <Card>
           <Heading>Seed notes</Heading>
