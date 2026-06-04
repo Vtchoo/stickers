@@ -103,17 +103,17 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
           </View>
         </View>
 
-        <Button onPress={() => navigation.navigate('StickerList', { albumId: album.id })}>
-          <ButtonText>List view</ButtonText>
-        </Button>
-        <Button onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
-          <ButtonText>Album view</ButtonText>
-        </Button>
         <Button onPress={() => navigation.navigate('RegisterSticker', { albumId: album.id })}>
           <ButtonText>Register stickers</ButtonText>
         </Button>
         <Button onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
           <ButtonText>Duplicates</ButtonText>
+        </Button>
+        <Button onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
+          <ButtonText>Album view</ButtonText>
+        </Button>
+        <Button onPress={() => navigation.navigate('StickerList', { albumId: album.id })} $variant="secondary">
+          <ButtonText>List view</ButtonText>
         </Button>
 
         <Card>
