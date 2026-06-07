@@ -25,6 +25,7 @@ import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateAlbumStats, calculateGroupStats, formatPercentage } from '../utils/album';
 import { Text, View } from 'react-native';
+import { useMemo } from 'react';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumDashboard'>;
 
@@ -62,15 +63,16 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
 
   const entryMap = buildEntryMap(getEntriesForAlbum(album.id));
   const stats = calculateAlbumStats(template, entryMap);
-  const groupHighlights = template.groups
-    .slice(0, 8)
+  const groupHighlights = useMemo(() => template.groups
     .map((group) => ({
       group,
       stats: calculateGroupStats(
         template.slots.filter((slot) => slot.groupId === group.id),
         entryMap,
       ),
-    }));
+    }))
+    .sort((a, b) => b.stats.completionPercentage - a.stats.completionPercentage)
+    .slice(0, 8), [template, entryMap]);
 
   return (
     <Screen>
