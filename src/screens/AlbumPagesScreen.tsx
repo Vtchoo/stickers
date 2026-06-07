@@ -104,8 +104,16 @@ const AlbumGroupSection = memo(
 		const groupStats = calculateGroupStats(sectionSlots, entryMap);
 		const progressLabel = `${groupStats.ownedUnique}/${groupStats.totalSlots}${groupStats.duplicateCount > 0 ? `/${groupStats.duplicateCount}` : ''}`;
 
+		const requiredComplete = groupStats.totalSlots > 0 && groupStats.ownedRequired >= groupStats.totalSlots;
+		const hasExtras = groupStats.ownedUnique > groupStats.ownedRequired;
+		const sectionBorderColor = requiredComplete
+			? hasExtras
+				? '#2f95a0'
+				: '#3fa86a'
+			: undefined;
+
 		return (
-			<Card>
+			<Card style={sectionBorderColor ? { borderColor: sectionBorderColor, borderWidth: 2 } : undefined}>
 				<RowBetween>
 					<Row style={{ flex: 1, alignItems: 'flex-start' }}>
 						{group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}

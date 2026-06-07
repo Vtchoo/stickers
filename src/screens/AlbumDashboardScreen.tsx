@@ -131,20 +131,28 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
 
         <Card>
           <Heading>Section progress</Heading>
-          {groupHighlights.map(({ group, stats: groupStats }) => (
-            <Card key={group.id} style={{ marginBottom: 10 }}>
-              <Row style={{ alignItems: 'flex-start' }}>
-                {group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
-                <Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
-              </Row>
-              <Subtitle>
-                {group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'} · {groupStats.ownedUnique}/{groupStats.totalSlots} owned
-              </Subtitle>
-              <ProgressRail>
-                <ProgressFill $width={groupStats.completionPercentage} />
-              </ProgressRail>
-            </Card>
-          ))}
+          {groupHighlights.map(({ group, stats: groupStats }) => {
+            const requiredComplete = groupStats.totalSlots > 0 && groupStats.ownedRequired >= groupStats.totalSlots;
+            const hasExtras = groupStats.ownedUnique > groupStats.ownedRequired;
+            const borderColor = requiredComplete
+              ? hasExtras ? '#2f95a0' : '#3fa86a'
+              : undefined;
+
+            return (
+              <Card key={group.id} style={{ marginBottom: 10, ...(borderColor ? { borderColor, borderWidth: 2 } : {}) }}>
+                <Row style={{ alignItems: 'flex-start' }}>
+                  {group.icon ? <Heading style={{ marginRight: 8 }}>{group.icon}</Heading> : null}
+                  <Heading style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{group.name}</Heading>
+                </Row>
+                <Subtitle>
+                  {group.groupLetter ? `Group ${group.groupLetter}` : 'Special section'} · {groupStats.ownedUnique}/{groupStats.totalSlots} owned
+                </Subtitle>
+                <ProgressRail>
+                  <ProgressFill $width={groupStats.completionPercentage} />
+                </ProgressRail>
+              </Card>
+            );
+          })}
         </Card>
       </ScrollContent>
     </Screen>

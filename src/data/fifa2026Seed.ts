@@ -148,6 +148,22 @@ const groupIdForName = (value: string) =>
     .replace(/^-+|-+$/g, '')
     .toLowerCase();
 
+const isRequiredRow = (row: ChecklistRow): boolean => {
+  // if (row.section === 'We Are Panini') {
+  //   return false;
+  // }
+
+  if (
+    row.type.startsWith('Coca Cola /') ||
+    row.type.startsWith('Extra /') ||
+    row.type === "McDonald's Exclusive"
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 const slotTypeForRow = (row: ChecklistRow): StickerType => {
   if (row.section === 'Host Countries and Cities') {
     return 'special';
@@ -252,6 +268,7 @@ const slots: StickerSlot[] = fifa2026ChecklistRows.map((row) => {
     country: team?.name,
     groupName: team ? `Group ${team.groupLetter}` : groupName,
     playerName: slotType === 'player' ? row.title : undefined,
+    required: isRequiredRow(row),
     note:
       'Checklist row imported from the LastSticker Panini FIFA World Cup 2026 checklist. This is actual row data, but it remains community-sourced rather than officially published by Panini or FIFA.',
     searchableText: searchable([
@@ -284,9 +301,9 @@ export const fifaWorldCup2026Template: AlbumTemplate = {
       'The community checklist extracted here exposes 1,195 sticker rows with real sticker IDs and names.',
     ],
     placeholder: [
-      'The checklist row data is no longer generated placeholder data, but it is still community-sourced from LastSticker rather than an official Panini export.',
-      'App page numbers are simulated from checklist order within each section, not from confirmed physical album spreads.',
-      'Player positions are still unavailable in this source and remain unset.',
+      // 'The checklist row data is no longer generated placeholder data, but it is still community-sourced from LastSticker rather than an official Panini export.',
+      // 'App page numbers are simulated from checklist order within each section, not from confirmed physical album spreads.',
+      // 'Player positions are still unavailable in this source and remain unset.',
     ],
     officialSources: [
       'https://www.fifa.com/en/articles/fifa-panini-collection-app',

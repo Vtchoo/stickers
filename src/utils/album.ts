@@ -20,8 +20,10 @@ export const calculateAlbumStats = (
   template: AlbumTemplate,
   entryMap: Record<string, number>,
 ): AlbumStats => {
-  const totalSlots = template.slots.length;
+  const requiredSlots = template.slots.filter((slot) => slot.required);
+  const totalSlots = requiredSlots.length;
   let ownedUnique = 0;
+  let ownedRequired = 0;
   let duplicateCount = 0;
 
   template.slots.forEach((slot) => {
@@ -32,14 +34,21 @@ export const calculateAlbumStats = (
     }
   });
 
-  const missing = totalSlots - ownedUnique;
+  requiredSlots.forEach((slot) => {
+    if (getSlotQuantity(entryMap, slot.id) > 0) {
+      ownedRequired += 1;
+    }
+  });
+
+  const missing = totalSlots - ownedRequired;
 
   return {
     totalSlots,
     ownedUnique,
+    ownedRequired,
     missing,
     duplicateCount,
-    completionPercentage: totalSlots === 0 ? 0 : Math.round((ownedUnique / totalSlots) * 100),
+    completionPercentage: totalSlots === 0 ? 0 : Math.min(100, Math.round((ownedRequired / totalSlots) * 100)),
   };
 };
 

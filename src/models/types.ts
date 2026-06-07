@@ -26,6 +26,7 @@ export interface StickerSlot {
   page: number;
   position: number;
   verified: boolean;
+  required: boolean;
   teamCode?: string;
   teamName?: string;
   country?: string;
@@ -67,6 +68,7 @@ export interface UserStickerEntry {
 export interface AlbumStats {
   totalSlots: number;
   ownedUnique: number;
+  ownedRequired: number;
   missing: number;
   duplicateCount: number;
   completionPercentage: number;
