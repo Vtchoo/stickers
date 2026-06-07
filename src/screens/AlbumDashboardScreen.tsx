@@ -119,18 +119,7 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
         </Button>
 
         <Card>
-          <Heading>Seed notes</Heading>
-          {template.sourceSummary.verified.map((item) => (
-            <Subtitle key={item}>• {item}</Subtitle>
-          ))}
-          <Divider />
-          {template.sourceSummary.placeholder.map((item) => (
-            <Subtitle key={item}>• {item}</Subtitle>
-          ))}
-        </Card>
-
-        <Card>
-          <Heading>Section progress</Heading>
+          <Heading>Progress</Heading>
           {groupHighlights.map(({ group, stats: groupStats }) => {
             const requiredComplete = groupStats.totalSlots > 0 && groupStats.ownedRequired >= groupStats.totalSlots;
             const hasExtras = groupStats.ownedUnique > groupStats.ownedRequired;
@@ -153,6 +142,17 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
               </Card>
             );
           })}
+        </Card>
+
+        <Card>
+          <Heading>Seed notes</Heading>
+          {template.sourceSummary.verified.map((item) => (
+            <Subtitle key={item}>• {item}</Subtitle>
+          ))}
+          <Divider />
+          {template.sourceSummary.placeholder.map((item) => (
+            <Subtitle key={item}>• {item}</Subtitle>
+          ))}
         </Card>
       </ScrollContent>
     </Screen>
