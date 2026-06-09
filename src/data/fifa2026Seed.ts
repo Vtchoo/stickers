@@ -156,7 +156,8 @@ const isRequiredRow = (row: ChecklistRow): boolean => {
   if (
     row.type.startsWith('Coca Cola /') ||
     row.type.startsWith('Extra /') ||
-    row.type === "McDonald's Exclusive"
+    row.type === "McDonald's Exclusive" ||
+    row.type === "silver"
   ) {
     return false;
   }
