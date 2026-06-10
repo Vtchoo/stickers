@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
-export const Screen = styled(SafeAreaView).attrs({ edges: ['top'] })`
+export const Screen = styled(SafeAreaView).attrs({ edges: ['bottom'] })`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
 `;
@@ -10,7 +10,6 @@ export const Screen = styled(SafeAreaView).attrs({ edges: ['top'] })`
 export const ScrollContent = styled.ScrollView.attrs((props) => ({
   contentContainerStyle: {
     padding: props.theme.spacing.md,
-    paddingBottom: props.theme.spacing.xl * 2,
     gap: props.theme.spacing.md,
   },
   showsVerticalScrollIndicator: false,
@@ -32,7 +31,7 @@ export const Card = styled.View`
   border-color: ${(props) => props.theme.colors.border};
   border-radius: ${(props) => props.theme.radii.lg}px;
   padding: ${(props) => props.theme.spacing.md}px;
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
+  /* margin-bottom: ${(props) => props.theme.spacing.md}px; */
   gap: ${(props) => props.theme.spacing.sm}px;
 `;
 

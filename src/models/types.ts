@@ -71,6 +71,7 @@ export interface AlbumStats {
   ownedRequired: number;
   missing: number;
   duplicateCount: number;
+  extras: number;
   completionPercentage: number;
 }
 

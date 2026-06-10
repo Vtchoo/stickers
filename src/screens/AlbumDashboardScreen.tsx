@@ -26,6 +26,7 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateAlbumStats, calculateGroupStats, formatPercentage } from '../utils/album';
 import { Text, View } from 'react-native';
 import { useMemo } from 'react';
+import { theme } from '../theme/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumDashboard'>;
 
@@ -90,33 +91,41 @@ export const AlbumDashboardScreen = ({ navigation, route }: Props) => {
 
         <View style={{ gap: 8 }}>
           <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-            <StatValue style={{ fontSize: 28 }}>{stats.ownedUnique} / {stats.totalSlots}</StatValue>
+            <StatValue style={{ fontSize: 28 }}>{stats.ownedRequired} / {stats.totalSlots}</StatValue>
             <Subtitle>Owned / Total</Subtitle>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <View style={{ alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ alignItems: 'center', flex: 1 }}>
               <Subtitle>Missing</Subtitle>
               <StatValue style={{ fontSize: undefined }}>{stats.missing}</StatValue>
             </View>
-            <View style={{ alignItems: 'center' }}>
+            <View style={{ alignItems: 'center', flex: 1 }}>
               <Subtitle>Duplicates</Subtitle>
               <StatValue style={{ fontSize: undefined }}>{stats.duplicateCount}</StatValue>
             </View>
+            {stats.extras > 0 ? (
+              <View style={{ alignItems: 'center', flex: 1 }}>
+                <Subtitle>Extras 😎</Subtitle>
+                <StatValue style={{ fontSize: undefined }}>{stats.extras}</StatValue>
+              </View>
+            ) : null}
           </View>
         </View>
 
-        <Button onPress={() => navigation.navigate('RegisterSticker', { albumId: album.id })}>
-          <ButtonText>Register stickers</ButtonText>
-        </Button>
-        <Button onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
-          <ButtonText>Duplicates</ButtonText>
-        </Button>
-        <Button onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
-          <ButtonText>Album view</ButtonText>
-        </Button>
-        <Button onPress={() => navigation.navigate('StickerList', { albumId: album.id })} $variant="secondary">
-          <ButtonText>List view</ButtonText>
-        </Button>
+        <View style={{ gap: theme.spacing.sm }}>
+          <Button onPress={() => navigation.navigate('RegisterSticker', { albumId: album.id })}>
+            <ButtonText>Register stickers</ButtonText>
+          </Button>
+          <Button onPress={() => navigation.navigate('Duplicates', { albumId: album.id })} $variant="secondary">
+            <ButtonText>Duplicates</ButtonText>
+          </Button>
+          <Button onPress={() => navigation.navigate('AlbumPages', { albumId: album.id })} $variant="secondary">
+            <ButtonText>Album view</ButtonText>
+          </Button>
+          <Button onPress={() => navigation.navigate('StickerList', { albumId: album.id })} $variant="secondary">
+            <ButtonText>List view</ButtonText>
+          </Button>
+        </View>
 
         <Card>
           <Heading>Progress</Heading>

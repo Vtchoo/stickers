@@ -42,12 +42,15 @@ export const calculateAlbumStats = (
 
   const missing = totalSlots - ownedRequired;
 
+  const ownedUniqueExtras = ownedUnique - ownedRequired;
+
   return {
     totalSlots,
     ownedUnique,
     ownedRequired,
     missing,
     duplicateCount,
+    extras: ownedUniqueExtras,
     completionPercentage: totalSlots === 0 ? 0 : Math.min(100, Math.round((ownedRequired / totalSlots) * 100)),
   };
 };
