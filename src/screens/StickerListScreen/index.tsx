@@ -29,10 +29,10 @@ import {
   Subtitle,
 } from '../../components/ui';
 import { useAlbums } from '../../context/AlbumsContext';
-import type { StickerFilter } from '../../models/types';
+import type { StickerFilter, StickerSlot } from '../../models/types';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { buildEntryMap, getDuplicateCount, getSlotQuantity, matchesFilter, matchesSearch } from '../../utils/album';
-import { SectionList } from 'react-native';
+import { SectionList, View } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'StickerList'>;
 
@@ -43,13 +43,25 @@ type StickerSection = {
 
 const filters: StickerFilter[] = ['all', 'owned', 'missing', 'duplicates'];
 
-const StickerRow = styled.Pressable`
+interface StickerRowProps {
+  $owned: boolean;
+  $duplicate: boolean;
+}
+
+const StickerRow = styled.Pressable<StickerRowProps>`
   border-width: 1px;
   border-color: ${(props) => props.theme.colors.border};
   border-radius: ${(props) => props.theme.radii.md}px;
   padding: ${(props) => props.theme.spacing.md}px;
-  margin-bottom: ${(props) => props.theme.spacing.sm}px;
+  /* margin-bottom: ${(props) => props.theme.spacing.sm}px; */
   background-color: ${(props) => props.theme.colors.surface};
+  
+  background-color: ${(props) =>
+		props.$duplicate
+			? props.theme.colors.slotDuplicate
+			: props.$owned
+				? props.theme.colors.slotOwned
+				: props.theme.colors.slotEmpty};
 `;
 
 export const StickerListScreen = ({ navigation, route }: Props) => {
@@ -95,7 +107,7 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
 
   const renderSectionHeader = useCallback(
     ({ section }: { section: StickerSection }) => (
-      <Card style={{ marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+      <View style={{ paddingVertical: 16 }}>
         <Row style={{ flex: 1, alignItems: 'flex-start' }}>
           {section.group.icon ? <Label style={{ marginRight: 8 }}>{section.group.icon}</Label> : null}
           <Label style={{ flex: 1, flexWrap: 'wrap', flexShrink: 1 }}>{section.group.name}</Label>
@@ -106,13 +118,13 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
         <SmallText>
           {section.group.groupLetter ? `Group ${section.group.groupLetter}` : 'Special section'}
         </SmallText>
-      </Card>
+      </View>
     ),
     [],
   );
 
   const renderItem = useCallback(
-    ({ item: slot }: { item: import('../../models/types').StickerSlot }) => {
+    ({ item: slot }: { item: StickerSlot }) => {
       const quantity = getSlotQuantity(entryMap, slot.id);
       const duplicates = getDuplicateCount(quantity);
 
@@ -122,27 +134,22 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
             registerMode
               ? addSticker(album.id, slot.id)
               : navigation.navigate('RegisterSticker', {
-                  albumId: album.id,
-                  initialSlotId: slot.id,
-                })
+                albumId: album.id,
+                initialSlotId: slot.id,
+              })
           }
+          onLongPress={() => {
+            if (registerMode)
+              removeSticker(album.id, slot.id);
+          }}
           style={{ borderRadius: 0, marginBottom: 0, borderTopWidth: 0 }}
+          $owned={quantity > 0}
+          $duplicate={duplicates > 0}
         >
           <RowBetween>
             <Row style={{ flex: 1 }}>
               <Heading style={{ fontSize: 16 }}>{slot.id}</Heading>
             </Row>
-            <SlotActionRow>
-              <MiniAction onPress={() => removeSticker(album.id, slot.id)} $tone="remove">
-                <MiniActionText $tone="remove">-</MiniActionText>
-              </MiniAction>
-              <MiniAction onPress={() => addSticker(album.id, slot.id)} $tone="add">
-                <MiniActionText>+</MiniActionText>
-              </MiniAction>
-              <MiniAction onPress={() => markMissing(album.id, slot.id)} $tone="missing">
-                <MiniActionText $tone="missing">0</MiniActionText>
-              </MiniAction>
-            </SlotActionRow>
           </RowBetween>
           <Subtitle>{slot.label}</Subtitle>
           <RowBetween style={{ marginTop: 10 }}>
@@ -159,11 +166,6 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
       );
     },
     [entryMap, registerMode, album.id, addSticker, removeSticker, markMissing, navigation],
-  );
-
-  const renderSectionFooter = useCallback(
-    () => <Card style={{ marginTop: 0, borderTopWidth: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, marginBottom: 16, minHeight: 8 }} />,
-    [],
   );
 
   const listHeader = (
@@ -201,12 +203,12 @@ export const StickerListScreen = ({ navigation, route }: Props) => {
         keyExtractor={(slot) => slot.id}
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
         ListHeaderComponent={listHeader}
         extraData={{ entryMap, registerMode }}
         contentContainerStyle={{ padding: 16, paddingBottom: 56 }}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
+        // horizontal
       />
     </Screen>
   );

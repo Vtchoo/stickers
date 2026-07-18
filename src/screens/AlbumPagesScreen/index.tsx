@@ -21,11 +21,11 @@ import {
 	ScrollContent,
 	SmallText,
 	Subtitle,
-} from '../components/ui';
-import { useAlbums } from '../context/AlbumsContext';
-import type { AlbumTemplateGroup, StickerSlot } from '../models/types';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../utils/album';
+} from '../../components/ui';
+import { useAlbums } from '../../context/AlbumsContext';
+import type { AlbumTemplateGroup, StickerSlot } from '../../models/types';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
+import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../../utils/album';
 import { FlatList, View } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
@@ -160,9 +160,8 @@ const AlbumGroupSection = memo(
 											})
 									}
 									onLongPress={() => {
-										if (duplicates > 0) {
+										if (registerMode)
 											removeSticker(albumId, slot.id);
-										}
 									}}
 								>
 									<View style={{ flex: 1, width: '100%' }}>
