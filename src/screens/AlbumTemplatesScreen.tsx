@@ -37,33 +37,25 @@ const ListItem = styled.Text`
 
 export const AlbumTemplatesScreen = ({ navigation }: Props) => {
   const { templates, createAlbum, isReady, userAlbums } = useAlbums();
-  const [albumName, setAlbumName] = useState('My Album');
+  const [albumName, setAlbumName] = useState<string>();
 
   return (
     <Screen>
       <ScrollContent>
-        <Hero>
-          <HeroTitle>Sticker Album Manager</HeroTitle>
+        <Hero style={{ gap: 16 }}>
+          <HeroTitle>Stickers</HeroTitle>
           <HeroText>
             Start personal albums from official templates, track owned stickers, and keep your duplicates ready for trades.
           </HeroText>
-          <Row style={{ marginTop: 14 }}>
+          <Row style={{ gap: 8 }}>
             <Badge>
               <BadgeText>{templates.length} template</BadgeText>
             </Badge>
-            <Row style={{ width: 8 }} />
             <Badge>
               <BadgeText>{userAlbums.length} albums</BadgeText>
             </Badge>
           </Row>
         </Hero>
-
-        <Card>
-          <Heading>Available templates</Heading>
-          <Subtitle>
-            The first seed uses FIFA World Cup 2026 data with verified tournament groups and stadiums, plus placeholder slot IDs where the physical checklist is incomplete.
-          </Subtitle>
-        </Card>
 
         {templates.map((template) => (
           <Card key={template.id}>
@@ -76,44 +68,33 @@ export const AlbumTemplatesScreen = ({ navigation }: Props) => {
             <Subtitle>
               {template.publisher} · {template.groups.filter((group) => group.section === 'team').length} team sections · {template.slots.length} total seeded slots
             </Subtitle>
+            <Button style={{ flex: 1 }} onPress={() => navigation.navigate('MyAlbums')}>
+              <GhostButtonText>My albums</GhostButtonText>
+            </Button>
 
-            <Label style={{ marginTop: 16 }}>Album name</Label>
-            <Input
-              placeholder="My Album"
-              value={albumName}
-              onChangeText={setAlbumName}
-              placeholderTextColor="#7f8a92"
-            />
-
-            <Row style={{ marginTop: 16, gap: 10 }}>
-              <Button
+            <Label style={{ marginTop: 16 }}>New album</Label>
+            <Row style={{ gap: 16 }}>
+              <Input
+                placeholder="Pick a name..."
+                value={albumName}
+                onChangeText={setAlbumName}
+                placeholderTextColor="#7f8a92"
                 style={{ flex: 1 }}
+              />
+
+              <Button
                 onPress={() => {
+                  if (!albumName || !albumName.trim()) {
+                    return;
+                  }
                   const album = createAlbum(template.id, albumName.trim() || 'My Album');
                   navigation.navigate('AlbumDashboard', { albumId: album.id });
                 }}
                 disabled={!isReady}
               >
-                <ButtonText>Create album</ButtonText>
+                <ButtonText>New</ButtonText>
               </Button>
-              <GhostButton style={{ flex: 1 }} onPress={() => navigation.navigate('MyAlbums')}>
-                <GhostButtonText>My albums</GhostButtonText>
-              </GhostButton>
             </Row>
-
-            <Label style={{ marginTop: 18 }}>Verified</Label>
-            {template.sourceSummary.verified.map((item) => (
-              <ListItem key={item}>• {item}</ListItem>
-            ))}
-
-            <Label style={{ marginTop: 18 }}>Placeholders in this MVP</Label>
-            {template.sourceSummary.placeholder.map((item) => (
-              <ListItem key={item}>• {item}</ListItem>
-            ))}
-
-            <SmallText style={{ marginTop: 18 }}>
-              Official sources: {template.sourceSummary.officialSources.join(' · ')}
-            </SmallText>
           </Card>
         ))}
       </ScrollContent>

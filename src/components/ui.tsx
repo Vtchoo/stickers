@@ -94,7 +94,7 @@ export const Input = styled.TextInput`
   color: ${(props) => props.theme.colors.text};
   padding: ${(props) => props.theme.spacing.md}px;
   font-size: 15px;
-  margin-top: ${(props) => props.theme.spacing.sm}px;
+  /* margin-top: ${(props) => props.theme.spacing.sm}px; */
 `;
 
 interface ButtonProps {

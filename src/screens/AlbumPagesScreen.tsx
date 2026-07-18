@@ -1,6 +1,6 @@
 import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { memo, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { memo, useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import styled from 'styled-components/native';
 
 import {
@@ -26,7 +26,7 @@ import { useAlbums } from '../context/AlbumsContext';
 import type { AlbumTemplateGroup, StickerSlot } from '../models/types';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, calculateGroupStats, getDuplicateCount, getSlotQuantity } from '../utils/album';
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AlbumPages'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -241,41 +241,53 @@ export const AlbumPagesScreen = ({ navigation, route }: Props) => {
 		return nextSlotsByGroupId;
 	}, [template]);
 
+	const renderItem = useCallback(
+		({ item: group }: { item: AlbumTemplateGroup }) => {
+			const sectionSlots = slotsByGroupId[group.id] ?? EMPTY_SLOTS;
+			const isCollapsed = collapsed[group.id] ?? true;
+
+			return (
+				<AlbumGroupSection
+					albumId={album.id}
+					entryMap={entryMap}
+					group={group}
+					isCollapsed={isCollapsed}
+					registerMode={registerMode}
+					sectionSlots={sectionSlots}
+					setCollapsed={setCollapsed}
+					compactMode={compactMode}
+				/>
+			);
+		},
+		[album.id, entryMap, collapsed, registerMode, slotsByGroupId, compactMode],
+	);
+
+	const listHeader = (
+		<Card>
+			<Heading>{album.customName}</Heading>
+			<Subtitle>Tap any slot in register mode to add one.</Subtitle>
+			<Row style={{ gap: 10, marginTop: 16 }}>
+				<Button style={{ flex: 1 }} onPress={() => setRegisterMode((current) => !current)} $variant={registerMode ? 'secondary' : 'primary'}>
+					<ButtonText>{registerMode ? 'Register mode on' : 'Register mode off'}</ButtonText>
+				</Button>
+				<GhostButton style={{ flex: 1 }} onPress={() => navigation.navigate('StickerList', { albumId })}>
+					<GhostButtonText>List view</GhostButtonText>
+				</GhostButton>
+			</Row>
+		</Card>
+	);
+
 	return (
 		<Screen>
-			<ScrollContent>
-				<Card>
-					<Heading>{album.customName}</Heading>
-					<Subtitle>Simulated album pages grouped into page-like grids. Tap any slot in register mode to add one.</Subtitle>
-					<Row style={{ gap: 10, marginTop: 16 }}>
-						<Button style={{ flex: 1 }} onPress={() => setRegisterMode((current) => !current)} $variant={registerMode ? 'secondary' : 'primary'}>
-							<ButtonText>{registerMode ? 'Register mode on' : 'Register mode off'}</ButtonText>
-						</Button>
-						<GhostButton style={{ flex: 1 }} onPress={() => navigation.navigate('StickerList', { albumId })}>
-							<GhostButtonText>List view</GhostButtonText>
-						</GhostButton>
-					</Row>
-				</Card>
-
-				{template.groups.map((group) => {
-					const sectionSlots = slotsByGroupId[group.id] ?? EMPTY_SLOTS;
-					const isCollapsed = collapsed[group.id] ?? true;
-
-					return (
-						<AlbumGroupSection
-							key={group.id}
-							albumId={album.id}
-							entryMap={entryMap}
-							group={group}
-							isCollapsed={isCollapsed}
-							registerMode={registerMode}
-							sectionSlots={sectionSlots}
-							setCollapsed={setCollapsed}
-							compactMode={compactMode}
-						/>
-					);
-				})}
-			</ScrollContent>
+			<FlatList
+				data={template.groups}
+				keyExtractor={(group) => group.id}
+				renderItem={renderItem}
+				ListHeaderComponent={listHeader}
+				extraData={{ collapsed, registerMode, compactMode, entryMap }}
+				contentContainerStyle={{ padding: 16, paddingBottom: 56, gap: 16 }}
+				showsVerticalScrollIndicator={false}
+			/>
 		</Screen>
 	);
 };
