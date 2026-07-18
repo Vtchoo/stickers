@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
-import { Alert, Modal, Pressable } from 'react-native';
+import { Alert, Modal, Pressable, Share } from 'react-native';
 import styled from 'styled-components/native';
 
 import {
@@ -24,6 +24,7 @@ import {
 import { useAlbums } from '../context/AlbumsContext';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { buildEntryMap, getDuplicateCount, getSlotQuantity } from '../utils/album';
+import { buildDuplicatesShareText, buildMissingShareText } from '../utils/shareText';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Duplicates'>;
 
@@ -121,6 +122,30 @@ export const DuplicatesScreen = ({ route }: Props) => {
 
   const givenAwayCount = totalTradeables - returnedCount;
 
+  const missingSlots = template.slots.filter(
+    (slot) => slot.required && getSlotQuantity(entryMap, slot.id) === 0,
+  );
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: buildMissingShareText(album.customName, missingSlots),
+      });
+    } catch (error) {
+      Alert.alert('Share failed', error instanceof Error ? error.message : 'Unable to share.');
+    }
+  };
+
+  const handleShareDuplicates = async () => {
+    try {
+      await Share.share({
+        message: buildDuplicatesShareText(album.customName, duplicates),
+      });
+    } catch (error) {
+      Alert.alert('Share failed', error instanceof Error ? error.message : 'Unable to share.');
+    }
+  };
+
   const openSettleTrade = () => {
     setKeptBack(
       Object.fromEntries(duplicates.map((item) => [item.slot.id, 0])),
@@ -166,6 +191,12 @@ export const DuplicatesScreen = ({ route }: Props) => {
               <ButtonText>Settle trade</ButtonText>
             </Button>
           ) : null}
+          <GhostButton style={{ marginTop: 8 }} onPress={() => void handleShare()}>
+            <GhostButtonText>Share missing</GhostButtonText>
+          </GhostButton>
+          <GhostButton style={{ marginTop: 8 }} onPress={() => void handleShareDuplicates()}>
+            <GhostButtonText>Share duplicates</GhostButtonText>
+          </GhostButton>
         </Card>
 
         {duplicates.length === 0 ? (
